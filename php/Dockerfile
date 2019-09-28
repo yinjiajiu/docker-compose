@@ -48,10 +48,6 @@ RUN curl -sS https://getcomposer.org/installer | php && \
     mv composer.phar /usr/local/bin/composer && \
     composer self-update --clean-backups
 
-# dev-tools for master
-RUN apt-get install -y gdb valgrind && \
-    apt autoremove && apt clean
-
 # install swoole
 RUN cd /root && \
     curl -o /tmp/swoole.tar.gz https://github.com/swoole/swoole-src/archive/master.tar.gz -L && \
