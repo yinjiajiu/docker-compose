@@ -1,4 +1,4 @@
-FROM daocloud.io/library/nginx:1.17.4-alpine
+FROM nginx:1.17-alpine
 
 # 设置时区
 RUN echo "Asia/shanghai" > /etc/timezone;
