@@ -9,27 +9,25 @@ ENV TIMEZONE=${timezone:-"Asia/Shanghai"} \
     PHPREDIS_VERSION=4.3.0 \
     SWOOLE_VERSION=4.4.7 \
     COMPOSER_ALLOW_SUPERUSER=1
-    
+
 RUN printf "deb http://archive.debian.org/debian/ jessie main\ndeb-src http://archive.debian.org/debian/ jessie main\ndeb http://security.debian.org jessie/updates main\ndeb-src http://security.debian.org jessie/updates main" > /etc/apt/sources.list
 
 RUN cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
     && echo "Asia/Shanghai" > /etc/timezone
-
-RUN apt-get update && apt-get install -y \
-        libfreetype6-dev \
-        libjpeg62-turbo-dev \
-        libmcrypt-dev \
+    
+RUN apt-get update \
+    && apt-get install -y \
+        curl wget git zip unzip less vim procps lsof tcpdump htop openssl \
+        libz-dev \
+        libssl-dev \
+        libnghttp2-dev \
+        libpcre3-dev \
+        libjpeg-dev \
         libpng-dev \
-        libmemcached-dev \
-        zlib1g-dev \
-        libcurl4-openssl-dev \
-        libxml2-dev \
-        --no-install-recommends && rm -rf /var/lib/apt/lists/* \
-    && docker-php-ext-install -j$(nproc) \
-        iconv mcrypt gettext curl mysqli pdo pdo_mysql zip \
-        mbstring bcmath opcache xml simplexml sockets hash soap \
-    && docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
-    && docker-php-ext-install -j$(nproc) gd
+        libfreetype6-dev \
+# Install PHP extensions
+    && docker-php-ext-install \
+       bcmath gd pdo_mysql mbstring sockets zip sysvmsg sysvsem sysvshm
 
 # Install composer
 Run curl -sS https://getcomposer.org/installer | php \
