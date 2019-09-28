@@ -1,59 +1,75 @@
 FROM php:7.3-fpm
-COPY config/php.ini /usr/local/etc/php/
-# --build-arg timezone=Asia/Shanghai
-ARG timezone
-# default use www-data user
-ARG work_user=www-data
 
-ENV TIMEZONE=${timezone:-"Asia/Shanghai"} \
-    PHPREDIS_VERSION=4.3.0 \
-    SWOOLE_VERSION=4.4.7 \
-    COMPOSER_ALLOW_SUPERUSER=1
+MAINTAINER twosee <1401128990@qq.com>
 
-RUN cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
-    && echo "Asia/Shanghai" > /etc/timezone
-
-# Libs -y --no-install-recommends
-RUN apt-get update \
-    && apt-get install -y \
-        curl wget zip unzip procps lsof  openssl \
-        libz-dev \
-        libssl-dev \
-        libnghttp2-dev \
-        libpcre3-dev \
-        libjpeg-dev \
-        libpng-dev \
+COPY config/php.ini /usr/local/etc/php
+# install modules : GD iconv
+RUN apt-get update && apt-get install -y \
+        procps \
         libfreetype6-dev \
-# Install PHP extensions
-    && docker-php-ext-install \
-       bcmath gd pdo_mysql mbstring sockets zip sysvmsg sysvsem sysvshm
+        libjpeg62-turbo-dev \
+        libpng-dev \
+        openssl \
+        libssh-dev \
+        libpcre3 \
+        libpcre3-dev \
+        libnghttp2-dev \
+        libhiredis-dev \
+        curl \
+        wget \
+        zip \
+        unzip \
+        git \
+        vim && \
+        apt autoremove && apt clean
 
+# install php pdo_mysql opcache
+# WARNING: Disable opcache-cli if you run you php
+RUN docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ && \
+    docker-php-ext-install \
+    iconv \
+    gd \
+    pdo_mysql \
+    mysqli \
+    iconv \
+    mbstring \
+    json \
+    opcache \
+    sockets \
+    pcntl && \
+    echo "opcache.enable_cli=1" >> /usr/local/etc/php/conf.d/docker-php-ext-opcache.ini
 
-# Install composer
-Run curl -sS https://getcomposer.org/installer | php \
-    && mv composer.phar /usr/local/bin/composer \
-    && composer self-update --clean-backups \
-# Install redis extension
-    && wget http://pecl.php.net/get/redis-${PHPREDIS_VERSION}.tgz -O /tmp/redis.tar.tgz \
-    && pecl install /tmp/redis.tar.tgz \
-    && rm -rf /tmp/redis.tar.tgz \
-    && docker-php-ext-enable redis \
-# Install swoole extension
-    && wget https://github.com/swoole/swoole-src/archive/v${SWOOLE_VERSION}.tar.gz -O swoole.tar.gz \
-    && mkdir -p swoole \
-    && tar -xf swoole.tar.gz -C swoole --strip-components=1 \
-    && rm swoole.tar.gz \
-    && ( \
-        cd swoole \
-        && phpize \
-        && ./configure --enable-mysqlnd --enable-sockets --enable-openssl --enable-http2 \
-        && make -j$(nproc) \
-        && make install \
-    ) \
-    && rm -r swoole \
-    && docker-php-ext-enable swoole \
-# Clear dev deps
-    && apt-get clean \
-    && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
+#install redis
+RUN pecl install redis && docker-php-ext-enable redis
 
-WORKDIR /www
+# install composer
+ENV COMPOSER_ALLOW_SUPERUSER 1
+RUN curl -sS https://getcomposer.org/installer | php && \
+    mv composer.phar /usr/local/bin/composer && \
+    composer self-update --clean-backups
+
+# dev-tools for master
+RUN apt-get install -y gdb valgrind && \
+    apt autoremove && apt clean
+
+# install swoole
+RUN cd /root && \
+    curl -o /tmp/swoole.tar.gz https://github.com/swoole/swoole-src/archive/master.tar.gz -L && \
+    tar zxvf /tmp/swoole.tar.gz && cd swoole-src* && \
+    phpize && \
+    ./configure \
+    --enable-coroutine \
+    --enable-openssl  \
+    --enable-http2  \
+    --enable-async-redis \
+    --enable-sockets \
+    --enable-mysqlnd && \
+    make && make install && \
+    docker-php-ext-enable swoole && \
+    echo "swoole.fast_serialize=On" >> /usr/local/etc/php/conf.d/docker-php-ext-swoole-serialize.ini && \
+    rm -rf /tmp/*
+
+# set China timezone
+RUN /bin/cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
+    echo 'Asia/Shanghai' > /etc/timezone && \
+    echo "[Date]\ndate.timezone=Asia/Shanghai" > /usr/local/etc/php/conf.d/timezone.ini
