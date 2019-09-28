@@ -10,20 +10,24 @@ ENV TIMEZONE=${timezone:-"Asia/Shanghai"} \
     SWOOLE_VERSION=4.4.7 \
     COMPOSER_ALLOW_SUPERUSER=1
 
-# Libs -y --no-install-recommends
-RUN apt-get update \
-    && apt-get install -y \
-        curl zip unzip  vim procps lsof tcpdump htop openssl \
-        libz-dev \
-        libssl-dev \
-        libnghttp2-dev \
-        libpcre3-dev \
-        libjpeg-dev \
-        libpng-dev \
+RUN cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
+    && echo "Asia/Shanghai" > /etc/timezone
+    
+RUN apt-get update && apt-get install -y \
         libfreetype6-dev \
-# Install PHP extensions
-    && docker-php-ext-install \
-       bcmath gd pdo_mysql mbstring sockets zip sysvmsg sysvsem sysvshm mysqli  iconv  pdo
+        libjpeg62-turbo-dev \
+        libmcrypt-dev \
+        libpng-dev \
+        libmemcached-dev \
+        zlib1g-dev \
+        libcurl4-openssl-dev \
+        libxml2-dev \
+        --no-install-recommends && rm -rf /var/lib/apt/lists/* \
+    && docker-php-ext-install -j$(nproc) \
+        iconv mcrypt gettext curl mysqli pdo pdo_mysql zip \
+        mbstring bcmath opcache xml simplexml sockets hash soap \
+    && docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
+    && docker-php-ext-install -j$(nproc) gd
 
 # Install composer
 Run curl -sS https://getcomposer.org/installer | php \
