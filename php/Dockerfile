@@ -10,24 +10,8 @@ ENV TIMEZONE=${timezone:-"Asia/Shanghai"} \
     SWOOLE_VERSION=4.4.7 \
     COMPOSER_ALLOW_SUPERUSER=1
 
-RUN printf "deb http://archive.debian.org/debian/ jessie main\ndeb-src http://archive.debian.org/debian/ jessie main\ndeb http://security.debian.org jessie/updates main\ndeb-src http://security.debian.org jessie/updates main" > /etc/apt/sources.list
-
 RUN cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
     && echo "Asia/Shanghai" > /etc/timezone
-    
-RUN apt-get update \
-    && apt-get install -y \
-        curl wget git zip unzip less vim procps lsof tcpdump htop openssl \
-        libz-dev \
-        libssl-dev \
-        libnghttp2-dev \
-        libpcre3-dev \
-        libjpeg-dev \
-        libpng-dev \
-        libfreetype6-dev \
-# Install PHP extensions
-    && docker-php-ext-install \
-       bcmath gd pdo_mysql mbstring sockets zip sysvmsg sysvsem sysvshm
 
 # Install composer
 Run curl -sS https://getcomposer.org/installer | php \
