@@ -1,6 +1,7 @@
-FROM daocloud.io/library/nginx:1.13.0-alpine
+FROM daocloud.io/library/nginx:1.17.4-alpine
 
-### set timezome
-ENV TZ=Asia/Shanghai
-RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+# 设置时区
+RUN echo "Asia/shanghai" > /etc/timezone;
+RUN rm -rf /etc/localtime;
+RUN cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 
