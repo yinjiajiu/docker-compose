@@ -13,7 +13,7 @@ ENV TIMEZONE=${timezone:-"Asia/Shanghai"} \
 # Libs -y --no-install-recommends
 RUN apt-get update \
     && apt-get install -y \
-        curl wget git zip unzip less vim procps lsof tcpdump htop openssl \
+        curl zip unzip  vim procps lsof tcpdump htop openssl \
         libz-dev \
         libssl-dev \
         libnghttp2-dev \
