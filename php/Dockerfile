@@ -13,10 +13,20 @@ ENV TIMEZONE=${timezone:-"Asia/Shanghai"} \
 RUN cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
     && echo "Asia/Shanghai" > /etc/timezone
 
+# Libs -y --no-install-recommends
 RUN apt-get update \
     && apt-get install -y \
-        curl wget openssl \
-
+        curl wget zip unzip procps lsof  openssl \
+        libz-dev \
+        libssl-dev \
+        libnghttp2-dev \
+        libpcre3-dev \
+        libjpeg-dev \
+        libpng-dev \
+        libfreetype6-dev \
+# Install PHP extensions
+    && docker-php-ext-install \
+       bcmath gd pdo_mysql mbstring sockets zip sysvmsg sysvsem sysvshm
 
 
 # Install composer

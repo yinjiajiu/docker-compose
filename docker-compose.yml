@@ -25,7 +25,7 @@ services: #容器的集合
     volumes:
       - ${SOURCE_DIR}:/www
       - ${NGINX_CONFD_DIR}:/etc/nginx/conf.d
-      - ${NGINX_CERT_DIR}:/etc/nginx/cert/
+      - ${NGINX_CERT_DIR}:/etc/ssl
       - ${NGINX_CONF_FILE}:/etc/nginx/nginx.conf
       - ${NGINX_LOG_DIR}:/var/log/nginx
 
