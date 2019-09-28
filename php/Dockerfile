@@ -13,6 +13,12 @@ ENV TIMEZONE=${timezone:-"Asia/Shanghai"} \
 RUN cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
     && echo "Asia/Shanghai" > /etc/timezone
 
+RUN apt-get update \
+    && apt-get install -y \
+        curl wget openssl \
+
+
+
 # Install composer
 Run curl -sS https://getcomposer.org/installer | php \
     && mv composer.phar /usr/local/bin/composer \
